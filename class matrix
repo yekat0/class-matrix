@@ -1,0 +1,154 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+template <typename T>
+
+class Matrix {
+private:
+    vector<vector<T>> data;
+    size_t rows;
+    size_t columns;
+
+public:
+    Matrix(size_t rows, size_t columns) : rows(rows), columns(columns) {
+        data.resize(rows, vector<T>(columns));
+    }
+
+    size_t getRows() const {
+        return rows;
+    }
+
+    size_t getColumns() const {
+        return columns;
+    }
+
+    T& operator()(size_t row, size_t column) {
+        return data[row][column];
+    }
+
+    const T& operator()(size_t row, size_t column) const {
+        return data[row][column];
+    }
+
+    T determinant() const {
+        if (rows != columns) {
+            cout << "Determinant is only defined for square matrices\n";
+        }
+        else {
+            if (rows == 1) {
+                return data[0][0];
+            }
+
+            T det = 0;
+            for (size_t i = 0; i < columns; ++i) {
+                Matrix<T> subMatrix(rows - 1, columns - 1);
+                for (size_t j = 1; j < rows; ++j) {
+                    size_t currentColumn = 0;
+                    for (size_t k = 0; k < columns; ++k) {
+                        if (k == i) {
+                            continue;
+                        }
+                        subMatrix(j - 1, currentColumn) = data[j][k];
+                        ++currentColumn;
+                    }
+                }
+                T subDet = subMatrix.determinant();
+                det += (i % 2 == 0 ? 1 : -1) * data[0][i] * subDet;
+            }
+
+            return det;
+        }
+    }
+
+    size_t rank() const {
+        Matrix<T> temp(*this);
+        size_t rank = 0;
+        for (size_t row = 0; row < rows; ++row) {
+            if (rank == columns) {
+                break;
+            }
+            size_t pivot = rank;
+            while (pivot < columns && temp(row, pivot) == 0) {
+                ++pivot;
+            }
+            if (pivot == columns) {
+                continue;
+            }
+            if (pivot != rank) {
+                for (size_t i = 0; i < rows; ++i) {
+                    swap(temp(i, pivot), temp(i, rank));
+                }
+            }
+            for (size_t i = rank + 1; i < rows; ++i) {
+                T ratio = temp(i, rank) / temp(rank, rank);
+                for (size_t j = 0; j < columns; ++j) {
+                    temp(i, j) -= ratio * temp(rank, j);
+                }
+            }
+            ++rank;
+        }
+        return rank;
+    }
+
+    Matrix<T> transpose() const {
+        Matrix<T> transposed(columns, rows);
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < columns; ++j) {
+                transposed(j, i) = data[i][j];
+            }
+        }
+        return transposed;
+    }
+
+    Matrix<T> inverse() const {
+        if (rows != columns) {
+            cout << "Inverse is only defined for square matrices\n";
+        }
+
+        size_t n = rows;
+        Matrix<T> identity(rows, columns);
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < columns; ++j) {
+                identity(i, j) = (i == j) ? 1 : 0;
+            }
+        }
+
+        Matrix<T> temp(*this);
+
+        for (size_t i = 0; i < rows; ++i) {
+            // Поиск главного элемента
+            size_t pivot = i;
+            for (size_t j = i + 1; j < rows; ++j) {
+                if (abs(temp(j, i)) > abs(temp(pivot, i))) {
+                    pivot = j;
+                }
+            }
+
+            if (pivot != i) {
+                swap(temp.data[i], temp.data[pivot]);
+                swap(identity.data[i], identity.data[pivot]);
+            }
+
+            T divisor = temp(i, i);
+            if (divisor == 0) {
+                cout << "Matrix is not invertible\n";
+            }
+            for (size_t j = 0; j < columns; ++j) {
+                temp(i, j) /= divisor;
+                identity(i, j) /= divisor;
+            }
+
+            for (size_t j = 0; j < rows; ++j) {
+                if (j != i) {
+                    T multiplier = temp(j, i);
+                    for (size_t k = 0; k < columns; ++k) {
+                        temp(j, k) -= multiplier * temp(i, k);
+                        identity(j, k) -= multiplier * identity(i, k);
+                    }
+                }
+            }
+        }
+
+        return identity;
+    }
+};
