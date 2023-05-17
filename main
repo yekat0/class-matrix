@@ -1,0 +1,40 @@
+int main() {
+    Matrix<double> matrix(3, 3);
+    matrix(0, 0) = 1.0;
+    matrix(0, 1) = -2.0;
+    matrix(0, 2) = 3.0;
+    matrix(1, 0) = 0;
+    matrix(1, 1) = 4;
+    matrix(1, 2) = -1;
+    matrix(2, 0) = 5;
+    matrix(2, 1) = 0;
+    matrix(2, 2) = 0;
+
+    double det = matrix.determinant();
+    cout << "Determinant: " << det << endl << endl;
+
+    size_t rank = matrix.rank();
+    cout << "Rank: " << rank << endl << endl;
+
+    Matrix<double> inverseMatrix = matrix.inverse();
+    cout << "Inverse Matrix:" << endl;
+    for (size_t i = 0; i < inverseMatrix.getRows(); ++i) {
+        for (size_t j = 0; j < inverseMatrix.getColumns(); ++j) {
+            cout << inverseMatrix(i, j) << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+    Matrix<double> transposedMatrix = matrix.transpose();
+    cout << "Transposed Matrix:" << endl;
+    for (size_t i = 0; i < transposedMatrix.getRows(); ++i) {
+        for (size_t j = 0; j < transposedMatrix.getColumns(); ++j) {
+            cout << transposedMatrix(i, j) << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+    return 0;
+}
